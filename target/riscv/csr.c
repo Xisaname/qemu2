@@ -558,6 +558,20 @@ static RISCVException pmp(CPURISCVState *env, int csrno)
     return RISCV_EXCP_ILLEGAL_INST;
 }
 
+static RISCVException mttp(CPURISCVState* env, int csrno)
+{
+    if (!riscv_cpu_cfg(env)->ext_smsdid) {
+        return RISCV_EXCP_ILLEGAL_INST;
+    }
+    if (env->debugger) {
+        return RISCV_EXCP_NONE;
+    }
+    if (env->priv < PRV_M) {
+        return RISCV_EXCP_ILLEGAL_INST;
+    }
+    return RISCV_EXCP_NONE;
+}
+
 static RISCVException have_mseccfg(CPURISCVState *env, int csrno)
 {
     if (riscv_cpu_cfg(env)->ext_smepmp) {
@@ -4196,6 +4210,17 @@ static RISCVException write_pmpaddr(CPURISCVState *env, int csrno,
     return RISCV_EXCP_NONE;
 }
 
+static RISCVException read_mttp(CPURISCVState* env, int csrno, target_ulong* val)
+{
+    *val = env->mttp;
+    return RISCV_EXCP_NONE;
+}
+static RISCVException write_mttp(CPURISCVState* env, int csrno, target_ulong new_val)
+{
+    env->mttp = new_val;
+    return RISCV_EXCP_NONE;
+}
+
 static RISCVException read_tselect(CPURISCVState *env, int csrno,
                                    target_ulong *val)
 {
@@ -5223,6 +5248,9 @@ riscv_csr_operations csr_ops[CSR_TABLE_SIZE] = {
     [CSR_PMPADDR13]  = { "pmpaddr13", pmp, read_pmpaddr, write_pmpaddr },
     [CSR_PMPADDR14] =  { "pmpaddr14", pmp, read_pmpaddr, write_pmpaddr },
     [CSR_PMPADDR15] =  { "pmpaddr15", pmp, read_pmpaddr, write_pmpaddr },
+
+    /* Supervisor domain extensions */
+    [CSR_MTTP]      =  { "mttp", mttp, read_mttp, write_mttp, .min_priv_ver = PRIV_VERSION_1_12_0 },
 
     /* Debug CSRs */
     [CSR_TSELECT]   =  { "tselect",  debug, read_tselect,  write_tselect  },

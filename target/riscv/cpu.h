@@ -230,6 +230,9 @@ struct CPUArchState {
 
     target_ulong jvt;
 
+    /* Smsdid extension */
+    target_ulong mttp;
+
 #ifdef CONFIG_USER_ONLY
     uint32_t elf_flags;
 #endif

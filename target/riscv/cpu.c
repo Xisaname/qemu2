@@ -185,6 +185,7 @@ const RISCVIsaExtData isa_edata_arr[] = {
     ISA_EXT_DATA_ENTRY(smcntrpmf, PRIV_VERSION_1_12_0, ext_smcntrpmf),
     ISA_EXT_DATA_ENTRY(smepmp, PRIV_VERSION_1_12_0, ext_smepmp),
     ISA_EXT_DATA_ENTRY(smstateen, PRIV_VERSION_1_12_0, ext_smstateen),
+    ISA_EXT_DATA_ENTRY(smsdid, PRIV_VERSION_1_12_0, ext_smsdid),
     ISA_EXT_DATA_ENTRY(ssaia, PRIV_VERSION_1_12_0, ext_ssaia),
     ISA_EXT_DATA_ENTRY(ssccptr, PRIV_VERSION_1_11_0, has_priv_1_11),
     ISA_EXT_DATA_ENTRY(sscofpmf, PRIV_VERSION_1_12_0, ext_sscofpmf),
@@ -482,6 +483,7 @@ static void riscv_cove_cpu_init(Object* obj)
     RISCVCPU* cpu = RISCV_CPU(obj);
     /* All initialization processes are inherited from MAX CPU */
     riscv_max_cpu_init(obj);
+    cpu->cfg.ext_smsdid = true;
 }
 
 #if defined(TARGET_RISCV64)
@@ -1016,6 +1018,10 @@ static void riscv_cpu_reset_hold(Object *obj, ResetType type)
      */
     if (riscv_cpu_cfg(env)->ext_smepmp) {
         env->mseccfg = 0;
+    }
+
+    if (cpu->cfg.ext_smsdid) {
+        cpu->env.mttp = 0;
     }
 
     pmp_unlock_entries(env);
